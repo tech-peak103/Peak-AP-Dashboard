@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peak Potentia — AP Student Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" type="image/png" href="peak-potentia-icon.png">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="toast"></div>
+
+  <!-- ═══ LOGIN ═══ -->
+  <div id="s-login" class="screen active">
+    <div class="login-wrap">
+      <div class="login-deco"></div>
+      <div class="login-left">
+        <div>
+          <div class="ll-logo-wrap">
+            <div>
+              <div class="ll-bname"><img id="ll-logo" src="Peak New Logo  (2).png" alt="Logo"></div>
+              <!-- <div class="ll-btag">Advanced Placement Program · Excellence in Academics</div> -->
+            </div>
+          </div>
+          <h1 class="ll-headline">Your AP journey,<br><em>mastered.</em></h1>
+          <p class="ll-sub">Monitor AP assessments, track your progress, and stay on top of every AP subject — all in one place.</p>
+        </div>
+        <div class="role-pills">
+          <div class="role-pill active">Student</div>
+          <a href="teacher.html"><div class="role-pill">Teacher</div></a>
+        </div>
+      </div>
+      <div class="login-right">
+        <div class="lr-title">Welcome back</div>
+        <div class="lr-tag">Sign in to access your AP student dashboard</div>
+        <div id="login-err" class="login-err"></div>
+        <label class="fl" for="inp-user">Username</label>
+        <div class="fw">
+          <span class="fi-icon">👤</span>
+          <input class="fi" id="inp-user" type="text" placeholder="Enter your username" autocomplete="username">
+        </div>
+        <label class="fl" for="inp-pass">Password</label>
+        <div class="fw">
+          <span class="fi-icon">🔒</span>
+          <input class="fi" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+          <button class="tog-pass" type="button" onclick="togglePass()">👁</button>
+        </div>
+        <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in to portal</button>
+        <p class="login-forgot">Forgot password? <a href="#" onclick="toast('Contact your admin to reset password.','ok');return false;">Contact admin</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="s-dash" class="screen">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sb-logo-row">
+          <img src="Peak New Logo  (2).png" alt="">
+          <span class="sb-logo-text">Peak <em>Potentia</em></span>
+        </div>
+        <div class="sb-role-tag" id="sb-role-tag">AP Student</div>
+        <div class="sb-menu-lbl" id="sb-menu-lbl">Menu</div>
+        <nav class="sb-nav" id="sb-nav">
+          <div class="sb-item active" data-view="view-subjects" onclick="switchDashView(this,'view-subjects')"><span class="sb-ic">📄</span> My Subjects</div>
+          <div class="sb-item" data-view="view-worksheets" onclick="switchDashView(this,'view-worksheets')"><span class="sb-ic">📝</span> Worksheets</div>
+          <div class="sb-item" data-view="view-notices" onclick="switchDashView(this,'view-notices')"><span class="sb-ic">🔔</span> Notices</div>
+        </nav>
+        <div class="sb-user">
+          <div class="tb-avatar" id="tb-av">—</div>
+          <div class="sb-user-info">
+            <div class="sb-uname" id="tb-un">—</div>
+            <div class="sb-uid" id="tb-ur">—</div>
+          </div>
+          <button class="sb-logout" onclick="doLogout()" title="Sign out">⎋</button>
+        </div>
+      </aside>
+      <main class="main-area">
+        <div class="topsearch">
+          <input class="topsearch-input" id="dash-search" placeholder="Search subjects, worksheets…" oninput="filterDashTables(this.value)">
+          <button class="topsearch-bell">🔔<span class="ndot"></span></button>
+        </div>
+        <div class="dash-greet">
+          <h2>Good morning, <em id="greet-name">—</em> ✦</h2>
+          <p id="subj-lbl">AP Subjects</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-tile"><div class="stat-tile-lbl">AP Subjects</div><div class="stat-tile-val" id="stat-subj-ct">0</div></div>
+          <div class="stat-tile"><div class="stat-tile-lbl">Worksheets Assigned</div><div class="stat-tile-val" id="stat-ws-assigned">0</div></div>
+          <div class="stat-tile"><div class="stat-tile-lbl">Worksheets Completed</div><div class="stat-tile-val" id="stat-ws-done">0</div></div>
+          <div class="stat-tile"><div class="stat-tile-lbl">Average Worksheet Score</div><div class="stat-tile-val accent" id="stat-ws-avg">—</div></div>
+        </div>
+        <div class="view-tabs">
+          <div class="view-tab active" data-view="view-subjects" onclick="switchDashView(this,'view-subjects')">My Subjects</div>
+          <div class="view-tab" data-view="view-worksheets" onclick="switchDashView(this,'view-worksheets')">Worksheets</div>
+          <div class="view-tab" data-view="view-notices" onclick="switchDashView(this,'view-notices')">Notices</div>
+        </div>
+        <div class="banner-note">Har worksheet submit karne ke baad teacher check karke score aur remarks denge — status <strong>Worksheets</strong> tab mein module-wise yahin dikhega.</div>
+
+        <div class="data-view active" id="view-subjects">
+          <div class="data-table-card">
+            <table>
+              <thead><tr><th>Subject</th><th>Worksheets</th><th>Avg Score</th><th></th></tr></thead>
+              <tbody id="subj-grid"><tr><td colspan="4" class="loading-state">Loading subjects…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="data-view" id="view-worksheets">
+          <div class="data-table-card">
+            <table>
+              <thead><tr><th>Worksheet</th><th>Subject</th><th>Module</th><th>Due</th><th>Status</th><th>Score</th><th></th></tr></thead>
+              <tbody id="worksheets-body"><tr><td colspan="7" class="loading-state">Loading worksheets…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="data-view" id="view-notices">
+          <div class="nb-hdr"><span class="nb-lbl">Notices</span><span class="nb-badge" id="nb-ct">—</span></div>
+          <div class="notice-list" id="notice-list"><div class="loading-state">Loading…</div></div>
+        </div>
+
+        <!-- ═══ SUBJECT VIEW — opens IN PLACE inside the same sidebar shell,
+             exactly like the teacher portal (no separate top bar / screen) ═══ -->
+        <div class="data-view" id="view-subject">
+          <div class="dh">
+            <div class="dh-icon" id="d-icon">—</div>
+            <div>
+              <div class="dh-title" id="d-title">—</div>
+              <div class="dh-meta" id="d-meta">—</div>
+            </div>
+          </div>
+
+          <div class="widgets-row">
+            <div class="widget">
+              <div class="wlbl">Worksheets Completed</div>
+              <div class="widget-ring-wrap">
+                <div class="widget-ring">
+                  <svg width="70" height="70" viewBox="0 0 70 70">
+                    <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(20,22,26,.08)" stroke-width="7" />
+                    <circle id="ring-arc" cx="35" cy="35" r="28" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="0 175.9" />
+                  </svg>
+                  <div class="ring-val" id="ring-pct">0%</div>
+                </div>
+                <div>
+                  <div style="display:flex;align-items:flex-end;gap:6px;">
+                    <span class="wv" id="w-done">0</span>
+                    <span class="wd">/<span id="w-tot">10</span></span>
+                  </div>
+                  <div class="ws" id="w-rem">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="widget">
+              <div class="wlbl">Average Worksheet Score</div>
+              <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:10px;">
+                <span class="wv" id="w-avg" style="color:var(--gold);">—</span>
+                <span class="wd">%</span>
+              </div>
+              <div style="height:5px;background:var(--card3);border-radius:3px;overflow:hidden;margin-bottom:7px;">
+                <div id="avg-fill" style="height:100%;border-radius:3px;background:var(--gold);width:0%;transition:width .6s;"></div>
+              </div>
+              <div class="ws" id="w-vs">—</div>
+            </div>
+            <div class="widget" id="pay-widget" style="display:none;">
+              <div class="wlbl">Subscription Status</div>
+              <div id="pay-widget-body"><div class="loading-state" style="padding:16px 0">—</div></div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-hdr">
+              <div class="chart-ttl">Monthly Performance</div>
+              <div class="chart-leg">
+                <div class="cli"><div class="cldot" style="background:var(--gold);"></div>Your score</div>
+                <div class="cli"><div class="cldot" style="background:rgba(36,84,199,.35);"></div>Class avg</div>
+              </div>
+            </div>
+            <div class="chart-area" id="chart-area"><div class="loading-state">Loading chart…</div></div>
+          </div>
+
+          <div class="table-card">
+            <div class="thr">
+              <div class="ttl">Worksheet Score Breakdown</div>
+              <span style="font-size:12px;color:var(--muted);" id="tbl-meta">—</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr><th>#</th><th>Worksheet Name</th><th>Class Avg</th><th>Your Score</th><th>Remarks</th></tr></thead>
+                <tbody id="asmnt-body"><tr><td colspan="5" class="loading-state">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ═══ ASSIGNMENTS — module list now shows in the LEFT SIDEBAR
+               (see #sb-nav in JS); this area just lists the selected module's worksheets ═══ -->
+          <div id="assign-section" style="margin-top:24px;">
+            <div class="thr" style="padding:0 2px 12px;">
+              <div class="ttl" id="assign-section-title">All Worksheets</div>
+              <span id="assign-count-lbl" style="font-size:12px;color:var(--muted);">—</span>
+            </div>
+            <div id="assign-list-student"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW ASSIGNMENT MODAL ═══ -->
+  <div id="view-modal" style="display:none;position:fixed;inset:0;background:rgba(20,22,26,0.75);z-index:9998;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px;" oncontextmenu="return false;">
+    <div style="background:#ffffff;border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:860px;box-shadow:0 32px 100px rgba(15,23,42,0.35);" onselectstart="return false;" ondragstart="return false;">
+      <div id="view-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SUBMIT MODAL ═══ -->
+  <div id="submit-modal" style="display:none;position:fixed;inset:0;background:rgba(20,22,26,0.6);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#ffffff;border:1px solid var(--border);border-radius:14px;padding:28px;width:90%;max-width:420px;box-shadow:0 24px 80px rgba(15,23,42,0.25);">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:5px;">Submit Assignment</div>
+      <div id="modal-assign-title" style="font-size:13px;color:var(--muted);margin-bottom:20px;">—</div>
+      <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;">Upload File (PDF / Image / Word)</label>
+      <input type="file" id="submit-file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+        style="width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--cream);font-size:13px;margin-bottom:12px;box-sizing:border-box;">
+      <div id="submit-err" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;padding:8px 12px;background:var(--red-dim);border-radius:6px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <button onclick="closeSubmitModal()" style="padding:9px 18px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+        <button onclick="doSubmitAssignment()" style="padding:9px 20px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Submit →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
